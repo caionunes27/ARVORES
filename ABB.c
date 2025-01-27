@@ -31,14 +31,14 @@ no* insere(no* T, int valor) {
     return T;
 }
 
-// Função de remoção de um nó na árvore
-no* remove(no* T, int valor) {
+// Função de remoção de um nó na árvore (renomeada para evitar conflito)
+no* removeNo(no* T, int valor) {
     if (T == NULL) return NULL;  // Árvore vazia, nada a fazer.
 
     if (valor < T->chave) {
-        T->esq = remove(T->esq, valor);  // Recursivamente remove na subárvore esquerda.
+        T->esq = removeNo(T->esq, valor);  // Recursivamente remove na subárvore esquerda.
     } else if (valor > T->chave) {
-        T->dir = remove(T->dir, valor);  // Recursivamente remove na subárvore direita.
+        T->dir = removeNo(T->dir, valor);  // Recursivamente remove na subárvore direita.
     } else {
         // Caso o nó a ser removido tenha 0 ou 1 filho:
         if (T->esq == NULL) {
@@ -58,7 +58,7 @@ no* remove(no* T, int valor) {
         }
 
         T->chave = sucessor->chave;  // Substitui o valor do nó a ser removido pelo valor do sucessor.
-        T->dir = remove(T->dir, sucessor->chave);  // Remove o sucessor da árvore.
+        T->dir = removeNo(T->dir, sucessor->chave);  // Remove o sucessor da árvore.
     }
 
     return T;
@@ -83,6 +83,27 @@ void exibirMenu() {
     printf("1. Inserir valor\n");
     printf("2. Buscar valor\n");
     printf("3. Remover valor\n");
+    printf("4. Imprimir árvore\n");
+}
+
+// Função para imprimir a árvore de forma hierárquica
+void imprimirArvore(no* T, int espacos) {
+    if (T == NULL) return;
+
+    espacos += 10;  // Aumenta o espaçamento para indentar as linhas.
+
+    // Primeiro imprime o filho direito (se houver), com mais indentação.
+    imprimirArvore(T->dir, espacos);
+
+    // Imprime o valor da chave, com o espaçamento apropriado.
+    printf("\n");
+    for (int i = 10; i < espacos; i++) {
+        printf(" ");  // Faz a indentação.
+    }
+    printf("%d\n", T->chave);
+
+    // Imprime o filho esquerdo (se houver), com mais indentação.
+    imprimirArvore(T->esq, espacos);
 }
 
 int main() {
@@ -121,8 +142,13 @@ int main() {
             case 3:
                 printf("Digite o valor a ser removido: ");
                 scanf("%d", &valor);
-                raiz = remove(raiz, valor);
+                raiz = removeNo(raiz, valor);
                 printf("Valor %d removido da árvore, se existia.\n", valor);
+                break;
+
+            case 4:
+                printf("Imprimindo árvore:\n");
+                imprimirArvore(raiz, 0);
                 break;
 
             default:
