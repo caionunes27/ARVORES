@@ -126,12 +126,106 @@ no* busca(no* T, int valor) {
     return NULL;  // Valor não encontrado
 }
 
+// Função para imprimir a árvore de forma hierárquica
+void imprimirArvore(no* T, int espacos) {
+    if (T == NULL) return;
+
+    espacos += 10;  // Aumenta o espaçamento para indentar as linhas.
+
+    // Primeiro imprime o filho direito (se houver), com mais indentação.
+    imprimirArvore(T->dir, espacos);
+
+    // Imprime o valor da chave, com o espaçamento apropriado.
+    printf("\n");
+    for (int i = 10; i < espacos; i++) {
+        printf(" ");  // Faz a indentação.
+    }
+    printf("%d\n", T->chave);
+
+    // Imprime o filho esquerdo (se houver), com mais indentação.
+    imprimirArvore(T->esq, espacos);
+}
+
+// Função para encontrar o nó com o menor valor (para remoção de nós com dois filhos)
+no* minimo(no* T) {
+    no* atual = T;
+    while (atual && atual->esq != NULL) {
+        atual = atual->esq;
+    }
+    return atual;
+}
+
+// Função para remover um nó da árvore AVL
+no* deleta(no* T, int valor) {
+    if (T == NULL) {
+        return T;  // Árvore vazia, nada a fazer
+    }
+
+    // Passo 1: Remover o nó da árvore (como em uma árvore binária de busca)
+    if (valor < T->chave) {
+        T->esq = deleta(T->esq, valor);  // Remover na subárvore esquerda
+    } else if (valor > T->chave) {
+        T->dir = deleta(T->dir, valor);  // Remover na subárvore direita
+    } else {
+        // Caso 1: Nó com um único filho ou sem filhos
+        if (T->esq == NULL) {
+            no* temp = T->dir;
+            free(T);
+            return temp;
+        } else if (T->dir == NULL) {
+            no* temp = T->esq;
+            free(T);
+            return temp;
+        }
+
+        // Caso 2: Nó com dois filhos
+        // Encontra o nó com o valor mínimo na subárvore direita
+        no* temp = minimo(T->dir);
+        
+        // Substitui o valor do nó atual pelo valor do nó mínimo
+        T->chave = temp->chave;
+        
+        // Remove o nó mínimo da subárvore direita
+        T->dir = deleta(T->dir, temp->chave);
+    }
+
+    // Passo 2: Atualiza a altura do nó atual
+    T->altura = 1 + (altura(T->esq) > altura(T->dir) ? altura(T->esq) : altura(T->dir));
+
+    // Passo 3: Verifica o fator de balanceamento e faz rotações, se necessário
+    int balance = fatorBalanceamento(T);
+
+    // Caso 1: Desbalanceamento à esquerda
+    if (balance > 1 && fatorBalanceamento(T->esq) >= 0) {
+        return rotacionaDireita(T);
+    }
+
+    // Caso 2: Desbalanceamento à direita
+    if (balance < -1 && fatorBalanceamento(T->dir) <= 0) {
+        return rotacionaEsquerda(T);
+    }
+
+    // Caso 3: Desbalanceamento à esquerda à direita (rotação dupla)
+    if (balance > 1 && fatorBalanceamento(T->esq) < 0) {
+        return rotacionaEsquerdaDireita(T);
+    }
+
+    // Caso 4: Desbalanceamento à direita à esquerda (rotação dupla)
+    if (balance < -1 && fatorBalanceamento(T->dir) > 0) {
+        return rotacionaDireitaEsquerda(T);
+    }
+
+    return T;  // Retorna o nó atual (com balanceamento corrigido, se necessário)
+}
+
 // Função para exibir o menu
 void exibirMenu() {
     printf("\nEscolha uma opcao:\n");
     printf("0. Sair\n");
     printf("1. Inserir valor\n");
     printf("2. Buscar valor\n");
+    printf("3. Remover valor\n");
+    printf("4. Imprimir árvore\n");
 }
 
 int main() {
@@ -167,6 +261,10 @@ int main() {
                 }
                 break;
 
+            case 4:
+                printf("Imprimindo árvore:\n");
+                imprimirArvore(raiz, 0);
+                break;
             default:
                 printf("Opcao invalida. Tente novamente.\n");
                 break;
